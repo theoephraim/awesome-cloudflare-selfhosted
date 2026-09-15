@@ -330,7 +330,7 @@ are recognised. If a project deploys to Cloudflare some third way, that's a bug 
 
 The audit needs `gh` authenticated for API quota; CI runs it monthly and on every pull request.
 
-<!-- audit stamp, updated by build-readme.js -->
+<!-- audit stamp, updated by build.js -->
 **Entries:** 116 · **Last audit:** 2026-09-15
 
 ## Contributing
