@@ -40,14 +40,16 @@ const HEADER = ["Project", "What it replaces"];
  * ragged cells, and hand-aligning 116 rows would be unmaintainable. Since the
  * page is generated, the builder does it.
  *
- * Widths count code points rather than UTF-16 units so the ★ and ⚠ characters
- * do not throw the columns out.
+ * Widths are measured the way remark-lint measures them, in UTF-16 units.
  */
 function table(entries) {
   const rows = [HEADER, ...entries.map(renderRow)];
-  const widths = HEADER.map((_, i) => Math.max(...rows.map((r) => [...r[i]].length)));
+  // UTF-16 length, not code points. remark-lint measures cells that way, and an
+  // astral character disagrees: 🧡 is one code point but two units, so padding by
+  // code points left every row containing it one short of aligned.
+  const widths = HEADER.map((_, i) => Math.max(...rows.map((r) => r[i].length)));
   const pad = (cells) =>
-    `| ${cells.map((c, i) => c + " ".repeat(widths[i] - [...c].length)).join(" | ")} |`;
+    `| ${cells.map((c, i) => c + " ".repeat(widths[i] - c.length)).join(" | ")} |`;
   const rule = `| ${widths.map((n) => "-".repeat(n)).join(" | ")} |`;
   return [pad(rows[0]), rule, ...rows.slice(1).map(pad)].join("\n");
 }

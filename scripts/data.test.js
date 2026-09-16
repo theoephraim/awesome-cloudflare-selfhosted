@@ -121,12 +121,25 @@ test("renderRow marks unlicensed and source-available entries", () => {
   assert.match(open, /<img alt="EPL-2\.0"/);
 });
 
+// GitHub zeroes line-height on <sub>, so a wrapped detail line overlaps itself.
+test("the detail line uses an element that can wrap", () => {
+  const [, right] = renderRow({
+    name: "X", repo: "a/b", summary: "Thing.", license: "MIT",
+    bindings: ["D1", "R2", "KV", "Durable Objects", "Workers AI", "AI Gateway"],
+    deploy: true, official: true,
+  });
+  // <sub> has line-height 0 on GitHub, so wrapped lines overlap; <small> is
+  // stripped by the sanitiser. Neither may come back.
+  assert.ok(!right.includes("<sub>"), "sub overlaps itself when wrapped");
+  assert.ok(!right.includes("<small>"), "small is stripped by GitHub's sanitiser");
+});
+
 test("renderRow stacks the summary over the bindings", () => {
   const [, right] = renderRow({
     name: "X", repo: "a/b", summary: "Does a thing.", license: "MIT",
     bindings: ["D1", "R2", "KV"],
   });
-  assert.equal(right, "Does a thing.<br><sub>D1 · R2 · KV</sub>");
+  assert.equal(right, "Does a thing.<br>D1 · R2 · KV");
 });
 
 test("renderRow omits the bindings line when there are none", () => {
@@ -134,7 +147,7 @@ test("renderRow omits the bindings line when there are none", () => {
     name: "X", repo: "a/b", summary: "Does a thing.", license: "MIT", bindings: [],
   });
   assert.equal(right, "Does a thing.");
-  assert.ok(!right.includes("<sub>"));
+  assert.ok(!right.includes("<br>"));
 });
 
 test("slugify turns a repo into its entry id", () => {
@@ -268,7 +281,7 @@ test("renderRow notes a one-click deploy without linking it", () => {
   const [, right] = renderRow({
     name: "X", repo: "a/b", summary: "Thing.", license: "MIT", bindings: ["D1"], deploy: true,
   });
-  assert.equal(right, "Thing.<br><sub>D1 · ⚡ 1-click deploy</sub>");
+  assert.equal(right, "Thing.<br>D1 · ⚡ 1-click deploy");
   assert.ok(!right.includes("<a "), "a reader reads the project's docs first, not a deploy link");
   assert.ok(!right.includes("deploy.workers"), "no URL is stored, so none can be rendered");
 });
@@ -277,7 +290,7 @@ test("renderRow says nothing about deploying when there is no button", () => {
   const [, right] = renderRow({
     name: "X", repo: "a/b", summary: "Thing.", license: "MIT", bindings: ["D1"], deploy: null,
   });
-  assert.equal(right, "Thing.<br><sub>D1</sub>");
+  assert.equal(right, "Thing.<br>D1");
 });
 
 // Only the fact is stored. A URL we never render is one more thing to rot.
@@ -309,7 +322,7 @@ test("the official marker keys on the exact owner, not a substring", () => {
     name: "X", repo: "cloudflare/agentic-inbox", summary: "Thing.",
     license: "MIT", bindings: ["R2"], official: true,
   });
-  assert.match(official, /◆ by Cloudflare/);
+  assert.match(official, /🧡 by Cloudflare/);
 
   for (const repo of ["Cloudflare-Studio/ask-bonk", "cloudflarebase/cloudflarebase", "a/cloudflare"]) {
     const entries = [{ repo }];
@@ -323,7 +336,7 @@ test("only Cloudflare's own repos carry the official marker", () => {
     const expected = e.repo.startsWith("cloudflare/");
     assert.equal(e.official, expected, `${e.slug} official flag is wrong`);
     assert.equal(
-      renderRow(e)[1].includes("◆ by Cloudflare"),
+      renderRow(e)[1].includes("🧡 by Cloudflare"),
       expected,
       `${e.slug} marker does not match its owner`,
     );

@@ -73,7 +73,7 @@ carries the marker without a separate pass.
 
 ## Cloudflare's own projects
 
-Three entries are published by Cloudflare itself and are marked `◆ by Cloudflare`.
+Three entries are published by Cloudflare itself and are marked 🧡 `by Cloudflare`.
 
 This marker is derived from the repository owner rather than stored, so unlike
 the others it cannot drift and needs no refresh. It keys on the exact owner:

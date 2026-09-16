@@ -223,9 +223,15 @@ export function renderRow(entry) {
   // link would add, and an unused URL is one more thing that can rot.
   const parts = [...(entry.bindings ?? [])];
   if (entry.deploy) parts.push("⚡ 1-click deploy");
-  if (entry.official) parts.push("◆ by Cloudflare");
+  if (entry.official) parts.push("🧡 by Cloudflare");
   const detail = parts.join(" · ");
-  const right = detail ? `${entry.summary}<br><sub>${detail}</sub>` : entry.summary;
+  // No wrapper at all. <sub> was the obvious choice for smaller text, but GitHub
+  // sets `line-height: 0` on it so a subscript cannot disturb the line box --
+  // which means any <sub> that wraps renders its lines on top of each other, and
+  // this one wraps whenever a project has several bindings. <small> would be
+  // right, but GitHub's sanitiser strips it. Plain text wraps correctly, and a
+  // dotted list is distinguishable from a sentence without a size difference.
+  const right = detail ? `${entry.summary}<br>${detail}` : entry.summary;
 
   return [left, right];
 }
