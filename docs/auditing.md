@@ -57,6 +57,20 @@ the entry.
 `npm run popular` re-checks every entry monthly and rewrites only the files whose
 status changed, so a month where nothing crossed the line touches nothing.
 
+## One-click deploy
+
+Where a project's README carries a **Deploy to Cloudflare** button, the entry
+stores the URL in `deploy:` and the list links it — currently 45 of 118.
+
+The link is read from the README rather than constructed, because a button
+often points at a separate template repository rather than the project itself:
+EmDash's goes to `emdash-cms/templates`, R2 Explorer's to
+`cloudflare/templates`.
+
+A link rather than the official button image. Forty-five of those, each far
+wider than a badge, would swamp the column, and the value is the click rather
+than the artwork.
+
 ## What the audit checks
 
 [`scripts/audit.js`](../scripts/audit.js) walks every entry and reports:

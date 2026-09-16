@@ -134,7 +134,7 @@ export function slugForRepo(repo) {
  * repository, not by the submitter.
  */
 export function renderEntry({
-  name, repo, category, summary, license, bindings, licenseNote, popular,
+  name, repo, category, summary, license, bindings, licenseNote, popular, deploy,
 }) {
   const lines = [
     "---",
@@ -147,6 +147,7 @@ export function renderEntry({
   lines.push(`bindings: [${(bindings ?? []).join(", ")}]`);
   // Only when true -- an explicit `popular: false` on 96 files is noise.
   if (popular) lines.push("popular: true");
+  if (deploy) lines.push(`deploy: ${deploy}`);
   lines.push(`summary: ${summary}`, "---", "");
   return lines.join("\n");
 }

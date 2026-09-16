@@ -263,3 +263,43 @@ test("renderEntry writes the flag only when it is true", () => {
   });
   assert.ok(!ordinary.includes("popular"), "an explicit false would be noise on most entries");
 });
+
+test("renderRow links a one-click deploy where the project offers one", () => {
+  const [, right] = renderRow({
+    name: "X", repo: "a/b", summary: "Thing.", license: "MIT", bindings: ["D1"],
+    deploy: "https://deploy.workers.cloudflare.com/?url=https://github.com/a/b",
+  });
+  assert.match(right, /<a href="https:\/\/deploy\.workers\.cloudflare\.com[^"]*">⚡ 1-click deploy<\/a>/);
+  assert.match(right, /D1 · <a /, "it follows the bindings rather than replacing them");
+});
+
+test("renderRow says nothing about deploying when there is no button", () => {
+  const [, right] = renderRow({
+    name: "X", repo: "a/b", summary: "Thing.", license: "MIT", bindings: ["D1"], deploy: null,
+  });
+  assert.equal(right, "Thing.<br><sub>D1</sub>");
+});
+
+test("every stored deploy link is a Cloudflare deploy URL", () => {
+  for (const e of loadEntries().filter((x) => x.deploy)) {
+    assert.match(
+      e.deploy,
+      /^https:\/\/deploy\.workers\.cloudflare\.com\/\?url=/,
+      `${e.slug} has a deploy field that is not a deploy button`,
+    );
+  }
+});
+
+test("renderEntry writes the deploy link only when there is one", () => {
+  const withButton = renderEntry({
+    name: "X", repo: "a/b", category: "analytics", summary: "Thing.",
+    license: "MIT", bindings: ["D1"], deploy: "https://deploy.workers.cloudflare.com/?url=x",
+  });
+  assert.match(withButton, /^deploy: https:\/\/deploy\.workers\.cloudflare\.com/m);
+
+  const without = renderEntry({
+    name: "X", repo: "a/b", category: "analytics", summary: "Thing.",
+    license: "MIT", bindings: ["D1"], deploy: null,
+  });
+  assert.ok(!without.includes("deploy:"));
+});

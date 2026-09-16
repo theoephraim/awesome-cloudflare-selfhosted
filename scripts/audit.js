@@ -110,6 +110,15 @@ export async function inspectRepo(repo) {
     for (const b of bindingsInFile(await raw(repo, branch, p), p)) found.add(b);
   }
 
+  // A "Deploy to Cloudflare" button is the strongest form of what this list is
+  // about: into your own account without touching a terminal. Read from the
+  // README because that is where projects put it, and it often points at a
+  // separate template repo rather than the project itself.
+  const readmePath = paths.find((p) => /^readme(\.md)?$/i.test(p));
+  const readme = readmePath ? await raw(repo, branch, readmePath) : "";
+  const deploy =
+    readme.match(/https:\/\/deploy\.workers\.cloudflare\.com\/\?url=[^\s)"'\]]+/)?.[0] ?? null;
+
   const pushed = meta.pushed_at.slice(0, 10);
   return {
     repo,
@@ -122,6 +131,7 @@ export async function inspectRepo(repo) {
     license,
     licenseStatus: licenseStatus(license),
     configs,
+    deploy,
     bindings: [...found],
     daysSincePush: Math.floor((Date.now() - Date.parse(pushed)) / 86_400_000),
     deployException: DEPLOY_EXCEPTIONS[repo] ?? null,

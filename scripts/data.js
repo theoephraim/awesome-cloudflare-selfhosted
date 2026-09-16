@@ -111,6 +111,7 @@ export function loadEntries(categories = loadCategories()) {
       bindings: entry.bindings ?? [],
       license: entry.license ?? null,
       popular: entry.popular === true,
+      deploy: entry.deploy ?? null,
     };
   });
 
@@ -212,8 +213,13 @@ export function renderRow(entry) {
   const left = `**[${entry.name}](https://github.com/${entry.repo})**<br>` +
     `${starBadge(entry.repo, entry.popular)}&nbsp;${licenseBadge(entry.license)}`;
 
-  const bindings = (entry.bindings ?? []).join(" · ");
-  const right = bindings ? `${entry.summary}<br><sub>${bindings}</sub>` : entry.summary;
+  // A one-click deploy link where the project offers one. A link rather than the
+  // official button image: 45 of those, each far wider than a badge, would swamp
+  // the column -- and the value here is the click, not the artwork.
+  const parts = [...(entry.bindings ?? [])];
+  if (entry.deploy) parts.push(`<a href="${entry.deploy}">⚡ 1-click deploy</a>`);
+  const detail = parts.join(" · ");
+  const right = detail ? `${entry.summary}<br><sub>${detail}</sub>` : entry.summary;
 
   return [left, right];
 }
