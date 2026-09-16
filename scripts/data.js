@@ -111,7 +111,7 @@ export function loadEntries(categories = loadCategories()) {
       bindings: entry.bindings ?? [],
       license: entry.license ?? null,
       popular: entry.popular === true,
-      deploy: entry.deploy ?? null,
+      deploy: entry.deploy === true,
     };
   });
 
@@ -213,11 +213,13 @@ export function renderRow(entry) {
   const left = `**[${entry.name}](https://github.com/${entry.repo})**<br>` +
     `${starBadge(entry.repo, entry.popular)}&nbsp;${licenseBadge(entry.license)}`;
 
-  // A one-click deploy link where the project offers one. A link rather than the
-  // official button image: 45 of those, each far wider than a badge, would swamp
-  // the column -- and the value here is the click, not the artwork.
+  // Noted, not linked. A deploy button is not something a reader clicks cold --
+  // they will read the project's own docs first -- so this is a signal that the
+  // project made deploying easy, and the reader goes to the repository for it.
+  // Storing only the fact, never the URL: nothing is displayed that a stored
+  // link would add, and an unused URL is one more thing that can rot.
   const parts = [...(entry.bindings ?? [])];
-  if (entry.deploy) parts.push(`<a href="${entry.deploy}">⚡ 1-click deploy</a>`);
+  if (entry.deploy) parts.push("⚡ 1-click deploy");
   const detail = parts.join(" · ");
   const right = detail ? `${entry.summary}<br><sub>${detail}</sub>` : entry.summary;
 

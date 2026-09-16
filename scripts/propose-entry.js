@@ -126,7 +126,7 @@ async function main() {
     // Set at creation from the stars already fetched, so a popular submission
     // is highlighted the moment it lands rather than at the next refresh.
     popular: info.stars >= POPULAR_THRESHOLD,
-    deploy: info.deploy,
+    deploy: Boolean(info.deploy),
     licenseNote: unlicensed
       ? "No LICENSE file in the repository, so it is technically all-rights-reserved " +
         "until the maintainer adds one"

@@ -147,7 +147,7 @@ export function renderEntry({
   lines.push(`bindings: [${(bindings ?? []).join(", ")}]`);
   // Only when true -- an explicit `popular: false` on 96 files is noise.
   if (popular) lines.push("popular: true");
-  if (deploy) lines.push(`deploy: ${deploy}`);
+  if (deploy) lines.push("deploy: true");
   lines.push(`summary: ${summary}`, "---", "");
   return lines.join("\n");
 }

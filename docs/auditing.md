@@ -59,17 +59,17 @@ status changed, so a month where nothing crossed the line touches nothing.
 
 ## One-click deploy
 
-Where a project's README carries a **Deploy to Cloudflare** button, the entry
-stores the URL in `deploy:` and the list links it — currently 45 of 118.
+Where a project's README carries a **Deploy to Cloudflare** button, its entry
+records `deploy: true` and the list notes it — currently 45 of 118.
 
-The link is read from the README rather than constructed, because a button
-often points at a separate template repository rather than the project itself:
-EmDash's goes to `emdash-cms/templates`, R2 Explorer's to
-`cloudflare/templates`.
+Only the fact is stored, never the URL. The marker is not a link: a deploy
+button is not something a reader clicks cold, so the useful signal is that the
+project made deploying easy, and the reader follows the entry to the repository
+to read its docs first. A URL that is never rendered is one more thing that can
+rot.
 
-A link rather than the official button image. Forty-five of those, each far
-wider than a badge, would swamp the column, and the value is the click rather
-than the artwork.
+`propose-entry` sets it from the README it already reads, so a new submission
+carries the marker without a separate pass.
 
 ## What the audit checks
 

@@ -264,13 +264,13 @@ test("renderEntry writes the flag only when it is true", () => {
   assert.ok(!ordinary.includes("popular"), "an explicit false would be noise on most entries");
 });
 
-test("renderRow links a one-click deploy where the project offers one", () => {
+test("renderRow notes a one-click deploy without linking it", () => {
   const [, right] = renderRow({
-    name: "X", repo: "a/b", summary: "Thing.", license: "MIT", bindings: ["D1"],
-    deploy: "https://deploy.workers.cloudflare.com/?url=https://github.com/a/b",
+    name: "X", repo: "a/b", summary: "Thing.", license: "MIT", bindings: ["D1"], deploy: true,
   });
-  assert.match(right, /<a href="https:\/\/deploy\.workers\.cloudflare\.com[^"]*">⚡ 1-click deploy<\/a>/);
-  assert.match(right, /D1 · <a /, "it follows the bindings rather than replacing them");
+  assert.equal(right, "Thing.<br><sub>D1 · ⚡ 1-click deploy</sub>");
+  assert.ok(!right.includes("<a "), "a reader reads the project's docs first, not a deploy link");
+  assert.ok(!right.includes("deploy.workers"), "no URL is stored, so none can be rendered");
 });
 
 test("renderRow says nothing about deploying when there is no button", () => {
@@ -280,22 +280,19 @@ test("renderRow says nothing about deploying when there is no button", () => {
   assert.equal(right, "Thing.<br><sub>D1</sub>");
 });
 
-test("every stored deploy link is a Cloudflare deploy URL", () => {
+// Only the fact is stored. A URL we never render is one more thing to rot.
+test("the deploy field is a flag, never a URL", () => {
   for (const e of loadEntries().filter((x) => x.deploy)) {
-    assert.match(
-      e.deploy,
-      /^https:\/\/deploy\.workers\.cloudflare\.com\/\?url=/,
-      `${e.slug} has a deploy field that is not a deploy button`,
-    );
+    assert.equal(e.deploy, true, `${e.slug} stores something other than a flag`);
   }
 });
 
 test("renderEntry writes the deploy link only when there is one", () => {
   const withButton = renderEntry({
     name: "X", repo: "a/b", category: "analytics", summary: "Thing.",
-    license: "MIT", bindings: ["D1"], deploy: "https://deploy.workers.cloudflare.com/?url=x",
+    license: "MIT", bindings: ["D1"], deploy: true,
   });
-  assert.match(withButton, /^deploy: https:\/\/deploy\.workers\.cloudflare\.com/m);
+  assert.match(withButton, /^deploy: true$/m);
 
   const without = renderEntry({
     name: "X", repo: "a/b", category: "analytics", summary: "Thing.",
