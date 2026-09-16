@@ -112,6 +112,9 @@ export function loadEntries(categories = loadCategories()) {
       license: entry.license ?? null,
       popular: entry.popular === true,
       deploy: entry.deploy === true,
+      // Derived, never stored: the owner is already in `repo`, so this cannot
+      // drift and needs no refresh. Cheaper than every other marker here.
+      official: entry.repo.split("/")[0].toLowerCase() === "cloudflare",
     };
   });
 
@@ -220,6 +223,7 @@ export function renderRow(entry) {
   // link would add, and an unused URL is one more thing that can rot.
   const parts = [...(entry.bindings ?? [])];
   if (entry.deploy) parts.push("⚡ 1-click deploy");
+  if (entry.official) parts.push("◆ by Cloudflare");
   const detail = parts.join(" · ");
   const right = detail ? `${entry.summary}<br><sub>${detail}</sub>` : entry.summary;
 

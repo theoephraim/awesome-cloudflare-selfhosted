@@ -300,3 +300,32 @@ test("renderEntry writes the deploy link only when there is one", () => {
   });
   assert.ok(!without.includes("deploy:"));
 });
+
+// Derived from the repo owner, so unlike the other markers it cannot drift and
+// needs no refresh. It must key on the exact owner: "cloudflare-studio" or
+// "cloudflarebase" are not Cloudflare.
+test("the official marker keys on the exact owner, not a substring", () => {
+  const [, official] = renderRow({
+    name: "X", repo: "cloudflare/agentic-inbox", summary: "Thing.",
+    license: "MIT", bindings: ["R2"], official: true,
+  });
+  assert.match(official, /◆ by Cloudflare/);
+
+  for (const repo of ["Cloudflare-Studio/ask-bonk", "cloudflarebase/cloudflarebase", "a/cloudflare"]) {
+    const entries = [{ repo }];
+    const owner = entries[0].repo.split("/")[0].toLowerCase();
+    assert.notEqual(owner, "cloudflare", `${repo} must not read as official`);
+  }
+});
+
+test("only Cloudflare's own repos carry the official marker", () => {
+  for (const e of loadEntries()) {
+    const expected = e.repo.startsWith("cloudflare/");
+    assert.equal(e.official, expected, `${e.slug} official flag is wrong`);
+    assert.equal(
+      renderRow(e)[1].includes("◆ by Cloudflare"),
+      expected,
+      `${e.slug} marker does not match its owner`,
+    );
+  }
+});

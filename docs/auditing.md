@@ -71,6 +71,17 @@ rot.
 `propose-entry` sets it from the README it already reads, so a new submission
 carries the marker without a separate pass.
 
+## Cloudflare's own projects
+
+Three entries are published by Cloudflare itself and are marked `◆ by Cloudflare`.
+
+This marker is derived from the repository owner rather than stored, so unlike
+the others it cannot drift and needs no refresh. It keys on the exact owner:
+`Cloudflare-Studio` and `cloudflarebase` are other people.
+
+Being Cloudflare's does not exempt a project from the criteria. `cloudflare/agents`
+and `cloudflare/sandbox-sdk` are a framework and an SDK, so neither is listed.
+
 ## What the audit checks
 
 [`scripts/audit.js`](../scripts/audit.js) walks every entry and reports:
