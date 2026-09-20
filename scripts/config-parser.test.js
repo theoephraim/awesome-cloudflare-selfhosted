@@ -100,6 +100,35 @@ binding = "FILES"
 
 // Alchemy declares the same infrastructure in TypeScript. Missing this rejected
 // OpenSEO -- an 18.7k-star Ahrefs alternative -- as undeployable.
+// TOML declares queues as table arrays and images as a plain table -- neither
+// puts a `=` after the name, so the JSON-shaped patterns saw nothing. codeseer
+// (KV + Queues) audited as KV only.
+test("toml: queues and images table headers count as bindings", () => {
+  const toml = `
+name = "app"
+
+[[kv_namespaces]]
+binding = "STATE"
+id = "abc"
+
+[[queues.producers]]
+binding = "JOBS"
+queue = "jobs"
+
+[[queues.consumers]]
+queue = "jobs"
+max_batch_size = 1
+
+[images]
+binding = "IMAGES"
+`;
+  assert.deepEqual(bindingsInFile(toml, "wrangler.toml"), ["KV", "Queues", "Images"]);
+  assert.deepEqual(
+    bindingsInFile(`{"queues":{"producers":[{"binding":"JOBS","queue":"jobs"}]},"images":{"binding":"IMAGES"}}`, "wrangler.json"),
+    ["Queues", "Images"],
+  );
+});
+
 test("alchemy: bindings come from resource constructors", () => {
   const program = `
 import * as Cloudflare from "alchemy/cloudflare";
