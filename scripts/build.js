@@ -112,8 +112,8 @@ body:
     id: repo
     attributes:
       label: ${FIELDS.repo}
-      description: A GitHub repository, as \`owner/name\` or a full URL.
-      placeholder: owner/name
+      description: The full GitHub URL, so it is a link in the issue. \`owner/name\` works too.
+      placeholder: https://github.com/owner/name
     validations:
       required: true
 
