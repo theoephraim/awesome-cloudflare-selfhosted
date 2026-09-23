@@ -5,25 +5,33 @@
  * every rule here exists because a real config produced a wrong answer.
  */
 
-/** Binding name -> pattern matched against a wrangler config. */
+/**
+ * Binding name -> pattern matched against a wrangler config.
+ *
+ * Bindings are not inherited by wrangler environments, so a project deployed
+ * with `--env production` declares every one of them under
+ * `[env.production.<name>]`. The underscore-named keys match by substring and
+ * survive that; the table-header forms (`[ai]`, `[[queues.producers]]`,
+ * `[triggers]`) are anchored, so each allows a dotted prefix.
+ */
 export const BINDINGS = [
   ["D1", /d1_databases/i],
   ["R2", /r2_buckets/i],
   ["KV", /kv_namespaces/i],
   ["Durable Objects", /durable_objects/i],
-  ["Queues", /"?queues"?\s*[:=]|\[\[queues\./i],
-  ["Workers AI", /"?ai"?\s*[:=]\s*[{[]|\[ai\]/i],
+  ["Queues", /"?queues"?\s*[:=]|\[\[?(?:[\w-]+\.)*queues[\].]/i],
+  ["Workers AI", /"?ai"?\s*[:=]\s*[{[]|\[(?:[\w-]+\.)*ai\]/i],
   ["AI Gateway", /ai_gateway/i],
   ["Vectorize", /vectorize/i],
-  ["Workflows", /"?workflows"?\s*[:=]|\[\[workflows/i],
+  ["Workflows", /"?workflows"?\s*[:=]|\[\[(?:[\w-]+\.)*workflows/i],
   ["Email", /send_email/i],
   ["Analytics Engine", /analytics_engine/i],
-  ["Browser Rendering", /"?browser"?\s*[:=]\s*\{|browser_rendering|\[browser\]/i],
+  ["Browser Rendering", /"?browser"?\s*[:=]\s*\{|browser_rendering|\[(?:[\w-]+\.)*browser\]/i],
   ["Hyperdrive", /hyperdrive/i],
-  ["Images", /"?images"?\s*[:=]\s*\{|\[images\]/i],
+  ["Images", /"?images"?\s*[:=]\s*\{|\[(?:[\w-]+\.)*images\]/i],
   ["Pipelines", /pipelines/i],
-  ["Containers", /"?containers"?\s*[:=]|\[\[containers/i],
-  ["Cron", /"?crons"?\s*[:=]|\[triggers\]/i],
+  ["Containers", /"?containers"?\s*[:=]|\[\[(?:[\w-]+\.)*containers/i],
+  ["Cron", /"?crons"?\s*[:=]|\[(?:[\w-]+\.)*triggers\]/i],
 ];
 
 /**
