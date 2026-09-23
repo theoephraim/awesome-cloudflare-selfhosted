@@ -98,6 +98,80 @@ binding = "FILES"
   assert.deepEqual(bindingsInFile(cfg, "wrangler.toml"), ["R2"]);
 });
 
+// TOML declares queues as table arrays and images as a plain table -- neither
+// puts a `=` after the name, so the JSON-shaped patterns saw nothing. codeseer
+// (KV + Queues) audited as KV only.
+test("toml: queues and images table headers count as bindings", () => {
+  const toml = `
+name = "app"
+
+[[kv_namespaces]]
+binding = "STATE"
+id = "abc"
+
+[[queues.producers]]
+binding = "JOBS"
+queue = "jobs"
+
+[[queues.consumers]]
+queue = "jobs"
+max_batch_size = 1
+
+[images]
+binding = "IMAGES"
+`;
+  assert.deepEqual(bindingsInFile(toml, "wrangler.toml"), ["KV", "Queues", "Images"]);
+  assert.deepEqual(
+    bindingsInFile(`{"queues":{"producers":[{"binding":"JOBS","queue":"jobs"}]},"images":{"binding":"IMAGES"}}`, "wrangler.json"),
+    ["Queues", "Images"],
+  );
+});
+
+// Bindings are not inherited by environments, so a project deployed only with
+// `--env production` declares all of them under `[env.production.*]`. The
+// underscore-named keys match by substring; the header forms have to allow the
+// prefix. `[queues]` with inline producers is the third TOML spelling.
+test("toml: environment-scoped and plain-table headers count as bindings", () => {
+  const toml = `
+name = "app"
+
+[env.production]
+name = "app-production"
+
+[env.production.ai]
+binding = "AI"
+
+[env.production.browser]
+binding = "BROWSER"
+
+[env.production.images]
+binding = "IMAGES"
+
+[env.production.triggers]
+crons = ["0 * * * *"]
+
+[[env.production.queues.producers]]
+binding = "JOBS"
+queue = "jobs"
+
+[[env.production.workflows]]
+name = "sync"
+binding = "SYNC"
+class_name = "Sync"
+
+[[env.production.containers]]
+class_name = "Sandbox"
+image = "./Dockerfile"
+`;
+  assert.deepEqual(bindingsInFile(toml, "wrangler.toml"), [
+    "Queues", "Workers AI", "Workflows", "Browser Rendering", "Images", "Containers", "Cron",
+  ]);
+  assert.deepEqual(
+    bindingsInFile(`[queues]\nproducers = [{ binding = "JOBS", queue = "jobs" }]\n`, "wrangler.toml"),
+    ["Queues"],
+  );
+});
+
 // Alchemy declares the same infrastructure in TypeScript. Missing this rejected
 // OpenSEO -- an 18.7k-star Ahrefs alternative -- as undeployable.
 test("alchemy: bindings come from resource constructors", () => {
