@@ -11,6 +11,7 @@ import assert from "node:assert/strict";
 import { loadCategories } from "./data.js";
 import {
   FIELDS,
+  cleanName,
   cleanSummary,
   normaliseRepo,
   parseIssueBody,
@@ -21,9 +22,10 @@ import {
 
 const categories = loadCategories();
 
-function body({ repo = "CCCrafts/punctual", category = "Business and operations", summary = "Calendly alternative.", notes = "_No response_" } = {}) {
+function body({ repo = "CCCrafts/punctual", name = "_No response_", category = "Business and operations", summary = "Calendly alternative.", notes = "_No response_" } = {}) {
   return [
     `### ${FIELDS.repo}`, "", repo, "",
+    `### ${FIELDS.name}`, "", name, "",
     `### ${FIELDS.category}`, "", category, "",
     `### ${FIELDS.summary}`, "", summary, "",
     `### ${FIELDS.notes}`, "", notes, "",
@@ -108,6 +110,29 @@ test("a valid submission resolves its category", () => {
   assert.equal(result.entry.repo, "CCCrafts/punctual");
   assert.equal(result.entry.category.slug, "business-and-operations");
   assert.equal(result.entry.slug, "punctual");
+});
+
+test("the name comes from the issue, or the repository when none is given", () => {
+  const fallback = validateSubmission(parseIssueBody(body()), categories);
+  assert.equal(fallback.entry.name, "punctual");
+  assert.equal(fallback.entry.nameFromRepo, true);
+
+  const given = validateSubmission(
+    parseIssueBody(body({ repo: "EdgeKits/repoaccess-core", name: "RepoAccess" })),
+    categories,
+  );
+  assert.equal(given.entry.name, "RepoAccess");
+  assert.equal(given.entry.nameFromRepo, false);
+  assert.equal(given.entry.slug, "repoaccess-core", "the id still follows the repository");
+});
+
+test("a name cannot break out of frontmatter either", () => {
+  for (const name of ["---\nname: evil", "x".repeat(61)]) {
+    const result = validateSubmission(parseIssueBody(body({ name })), categories);
+    assert.equal(result.ok, false, `should have refused ${JSON.stringify(name)}`);
+    assert.match(result.errors[0], /\*\*Name\*\*/);
+  }
+  assert.equal(cleanName("Two\nlines"), "Two lines");
 });
 
 test("a category may be given by slug as well as by name", () => {

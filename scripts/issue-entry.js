@@ -4,7 +4,8 @@
  * Contributors don't write entry files -- most of the fields are derived, and
  * hand-written `license`/`bindings` are exactly what the audit exists to
  * distrust. They open an issue with the three things only a human knows (which
- * repo, which category, what it replaces) and this builds the rest.
+ * repo, which category, what it replaces), optionally what the project calls
+ * itself when that is not the repository name, and this builds the rest.
  *
  * Everything here treats the issue body as hostile input: it is attacker-
  * controlled text that ends up in a file, a branch name and a commit. Fields
@@ -52,6 +53,19 @@ export function cleanSummary(value) {
 }
 
 /**
+ * A submitted display name, or null when it is unusable.
+ *
+ * Same hazards as the summary -- it lands in frontmatter -- plus a tighter
+ * length, since it is a column heading, not a sentence.
+ */
+export function cleanName(value) {
+  const text = cleanSummary(value);
+  if (!text) return null;
+  if (text.length > 60) return null;
+  return text;
+}
+
+/**
  * Parse a GitHub issue-form body.
  *
  * The form renders as `### Label` followed by the value, and `_No response_`
@@ -72,6 +86,7 @@ export function parseIssueBody(body) {
 
 export const FIELDS = {
   repo: "Repository",
+  name: "Name",
   category: "Category",
   summary: "What it replaces, in one sentence",
   notes: "Anything else",
@@ -109,12 +124,23 @@ export function validateSubmission(fields, categories = loadCategories()) {
     );
   }
 
+  // Optional. RepoAccess is published as `repoaccess-core`, and the list
+  // reads better with product names than package names -- but only the
+  // submitter knows which is which, so the repository name is the fallback,
+  // not the rule.
+  const givenName = (fields[FIELDS.name] ?? "").trim();
+  const name = givenName ? cleanName(givenName) : repo?.split("/")[1];
+  const nameFromRepo = !givenName;
+  if (givenName && !name) {
+    errors.push("**Name** must be a single line of 60 characters or fewer.");
+  }
+
   if (errors.length) return { ok: false, errors };
 
   return {
     ok: true,
     errors: [],
-    entry: { repo, category, summary, slug: slugForRepo(repo) },
+    entry: { repo, name, nameFromRepo, category, summary, slug: slugForRepo(repo) },
   };
 }
 

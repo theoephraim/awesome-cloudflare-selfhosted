@@ -104,8 +104,12 @@ jobs:
           npm run build
           npm test
 
-          SLUG=$(node -e 'console.log(JSON.parse(require("fs").readFileSync("proposal.json","utf8")).slug)')
-          REPO=$(node -e 'console.log(JSON.parse(require("fs").readFileSync("proposal.json","utf8")).repo)')
+          field() { node -e 'console.log(JSON.parse(require("fs").readFileSync("proposal.json","utf8"))[process.argv[1]])' "$1"; }
+          SLUG=$(field slug)
+          REPO=$(field repo)
+          NAME=$(field name)
+          CATEGORY=$(field category)
+          NAME_FROM_REPO=$(field nameFromRepo)
           rm -f proposal.json proposal-comment.md
 
           git config user.name  "github-actions[bot]"
@@ -119,12 +123,20 @@ jobs:
           git commit -m "Add $REPO to the list" -m "Closes #$ISSUE_NUMBER"
           git push -u origin "add-entry/$SLUG"
 
+          # The name is validated to a single line of plain text and the
+          # category is one of ours, so both are safe to interpolate here.
+          if [ "$NAME_FROM_REPO" = "true" ]; then
+            NAME_NOTE="No name was given in the issue, so the entry is named after the repository."
+          else
+            NAME_NOTE="The name comes from the issue."
+          fi
           gh pr create \
             --title "Add $REPO" \
-            --body "Generated from #$ISSUE_NUMBER, approved by @$APPROVER.
+            --body "Adds [\`$REPO\`](https://github.com/$REPO) as **$NAME** under *$CATEGORY*.
 
-          License and bindings were read from the repository. The display name comes from the repo
-          name and the summary from the issue, so both still want a human read." \
+          Generated from #$ISSUE_NUMBER, approved by @$APPROVER. License and bindings were read
+          from the repository. $NAME_NOTE The summary comes from the issue. Name, summary and
+          category all still want a human read." \
             --label submission
 
           # A record, not a trigger: nothing watches for this label.
