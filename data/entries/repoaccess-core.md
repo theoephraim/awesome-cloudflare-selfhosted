@@ -1,5 +1,5 @@
 ---
-name: repoaccess-core
+name: RepoAccess
 repo: EdgeKits/repoaccess-core
 category: business-and-operations
 license: AGPL-3.0
