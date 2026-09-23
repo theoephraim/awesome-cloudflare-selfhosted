@@ -76,7 +76,8 @@ These belong somewhere, just not here:
 ## How a submission becomes an entry
 
 1. You open [the issue form](../../issues/new?template=add-entry.yml) with a repository, a
-   category and a one-line summary. It is labelled `submission`.
+   category and a one-line summary — and a name, if the project calls itself something other
+   than its repository. It is labelled `submission`.
 2. `scripts/propose-entry.js` runs straight away and comments the verdict. It applies every rule a
    machine can decide: a Cloudflare deploy configuration, a commit inside 12 months, and not
    already listed. The license is reported, never a reason to refuse.

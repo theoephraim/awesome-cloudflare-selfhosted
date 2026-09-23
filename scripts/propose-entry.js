@@ -67,7 +67,7 @@ async function main() {
   const submission = validateSubmission(fields, categories);
   if (!submission.ok) reject(submission.errors);
 
-  const { repo, category, summary, slug } = submission.entry;
+  const { repo, name, nameFromRepo, category, summary, slug } = submission.entry;
 
   // Already listed?
   const existing = loadEntries(categories).find(
@@ -112,7 +112,6 @@ async function main() {
 
   if (reasons.length) reject(reasons);
 
-  const name = repo.split("/")[1];
   // A check reports; only the approved stage writes. Keeping stage one
   // side-effect free means it can be re-run at any time, locally included,
   // without leaving an entry behind that makes the next run report a duplicate.
@@ -159,6 +158,12 @@ async function main() {
     );
   }
   if (info.deployException) notes.push(`Deploy exception applies: ${info.deployException}.`);
+  if (nameFromRepo && checkOnly) {
+    notes.push(
+      `No name was given, so the entry is called \`${name}\` after the repository. ` +
+        "If the project calls itself something else, edit the issue and fill in **Name**.",
+    );
+  }
   if (!info.bindings.length) {
     notes.push(
       "No bindings were detected. That is fine for a stateless Worker, but if this project " +
@@ -192,14 +197,16 @@ async function main() {
             "and category are right. The pull request opens when a maintainer comments `/approve`.",
         ]
       : [
-          "The display name is taken from the repository; that, the summary and the category",
+          nameFromRepo
+            ? "The name is taken from the repository; that, the summary and the category"
+            : "The name and summary come from the issue; those and the category",
           "still get a human read before merge.",
         ]),
   ]);
 
   console.log(
     JSON.stringify(
-      { ok: true, repo, slug, name, category: category.slug, license: info.license },
+      { ok: true, repo, slug, name, nameFromRepo, category: category.name, license: info.license },
       null,
       1,
     ),

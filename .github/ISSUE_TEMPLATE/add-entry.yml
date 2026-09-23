@@ -26,6 +26,17 @@ body:
     validations:
       required: true
 
+  - type: input
+    id: name
+    attributes:
+      label: Name
+      description: >-
+        Optional. What the project calls itself, if that is not the repository name --
+        `RepoAccess`, not `repoaccess-core`. Left blank, the repository name is used.
+      placeholder: RepoAccess
+    validations:
+      required: false
+
   - type: dropdown
     id: category
     attributes:
